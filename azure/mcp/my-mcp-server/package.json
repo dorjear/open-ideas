@@ -1,0 +1,23 @@
+{
+  "name": "my-mcp-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/index.js",
+  "type": "module", 
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js",
+    "dev": "tsc --watch & node --watch build/index.js" 
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.0", 
+    "zod": "^3.24.1" 
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.2", 
+    "typescript": "^5.4.5"
+  }
+}

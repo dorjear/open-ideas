@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Azure Chat Agent Demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(to right, #89f7fe, #66a6ff);
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .chat-container {
+      width: 80%;
+      max-width: 800px;
+      height: 90vh;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .chat-box {
+      flex-grow: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .message {
+      padding: 10px 15px;
+      border-radius: 20px;
+      margin-bottom: 15px;
+      max-width: 70%;
+      line-height: 1.4;
+    }
+    .user-message {
+      background-color: #dcf8c6;
+      align-self: flex-end;
+    }
+    .assistant-message {
+      background-color: #fff;
+      align-self: flex-start;
+    }
+    .chat-input {
+      padding: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body class="d-flex flex-column vh-100">
+  <div class="chat-container">
+    <div class="chat-box" id="dialog-body">
+      <!-- Messages will be appended here -->
+    </div>
+    <div class="chat-input">
+      <div class="input-group">
+        <input type="text" id="userInput" class="form-control" placeholder="Type your message..." />
+        <button id="submitBtn" class="btn btn-primary">Submit</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    // --- GLOBALS ---
+    let threadId = null; // Global variable for thread ID[3]
+    const apiBase = "https://lumiaofangazurre-8334-resource.services.ai.azure.com/api/projects/lumiaofangazurre-8334";
+    const apiVersion = "v1";
+    const bearerToken = "Bearer your-agent-api-key";
+
+    // --- UTILS ---
+    function appendDialog(role, content) {
+      const dialogBody = document.getElementById('dialog-body');
+      const p = document.createElement('p');
+      p.innerHTML = `<b>${role}:</b> ${content}`;
+      p.classList.add('message', role === 'User' ? 'user-message' : 'assistant-message');
+      dialogBody.appendChild(p);
+      dialogBody.scrollTop = dialogBody.scrollHeight;
+    }
+
+    // --- API CALLS ---
+    async function createThread() {
+      const url = `${apiBase}/threads?api-version=${apiVersion}`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "authorization": bearerToken,
+          "content-type": "application/json"
+        }
+      });
+      const data = await res.json();
+      threadId = data.id; // Save thread ID globally[1][3]
+    }
+
+    async function createMessage(content) {
+      const url = `${apiBase}/threads/${threadId}/messages?api-version=${apiVersion}`;
+      const body = JSON.stringify({ role: "user", content });
+      await fetch(url, {
+        method: "POST",
+        headers: {
+          "authorization": bearerToken,
+          "content-type": "application/json"
+        },
+        body
+      });
+    }
+
+    async function runWithAgent() {
+      const url = `${apiBase}/threads/${threadId}/runs?api-version=${apiVersion}`;
+      const body = JSON.stringify({ assistant_id: "asst_JWUvNcWHHhOgF4yZchttubXF" });
+      await fetch(url, {
+        method: "POST",
+        headers: {
+          "authorization": bearerToken,
+          "content-type": "application/json"
+        },
+        body
+      });
+    }
+
+    async function listMessages() {
+      const url = `${apiBase}/threads/${threadId}/messages?api-version=${apiVersion}`;
+      const res = await fetch(url, {
+        method: "GET",
+        headers: {
+          "authorization": bearerToken
+        }
+      });
+      const data = await res.json();
+      return data.data || [];
+    }
+
+    // --- MAIN LOGIC ---
+    window.onload = async function() {
+      await createThread(); // Step 1: create thread on load[1]
+    };
+
+    document.getElementById('submitBtn').onclick = async function() {
+      const userInput = document.getElementById('userInput').value.trim();
+      if (!userInput) return;
+      appendDialog("User", userInput);
+
+      // Step 2: create message
+      await createMessage(userInput);
+
+      // Step 3: run with agent
+      await runWithAgent();
+
+      // Step 4: list messages and show response
+      setTimeout(async () => {
+        const messages = await listMessages();
+        // Find latest assistant message
+        const lastAssistantMsg = messages.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).find(m => m.role === "assistant");
+        if (lastAssistantMsg) {
+          appendDialog("Assistant", lastAssistantMsg.content[0].text.value);
+        } else {
+          appendDialog("Assistant", "<i>No response yet.</i>");
+        }
+      }, 5000); // Wait for agent to process (adjust as needed)
+      document.getElementById('userInput').value = "";
+    };
+  </script>
+</body>
+</html>

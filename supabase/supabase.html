@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Supabase CRUD - homeloan-rate</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #e7f5fe;
+    }
+    .glass-container {
+      background: linear-gradient(to bottom right, rgba(255, 255, 0, 0.1), rgba(255, 165, 0, 0.1));
+      border-radius: 15px;
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 2rem;
+    }
+  </style>
+</head>
+<body class="container mt-5">
+  <div class="glass-container">
+    <h1 class="mb-4">Supabase CRUD for <code>homeloan-rate</code></h1>
+    <div class="row g-3 align-items-center mb-3">
+      <div class="col-auto">
+        <label for="rate" class="col-form-label">Rate:</label>
+      </div>
+      <div class="col-auto">
+        <input type="number" id="rate" class="form-control" step="0.01" required />
+      </div>
+      <div class="col-auto">
+        <label for="rateType" class="col-form-label">Rate Type:</label>
+      </div>
+      <div class="col-auto">
+        <input type="text" id="rateType" class="form-control" required />
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-primary" onclick="createRow()">Create</button>
+      </div>
+    </div>
+
+    <button class="btn btn-secondary mb-3" onclick="fetchRows()">Refresh Table</button>
+    <pre id="error" class="text-danger"></pre>
+    <table id="table" class="table table-striped table-bordered">
+      <thead>
+        <tr>
+          <th>id</th>
+          <th>created_at</th>
+          <th>rate</th>
+          <th>rateType</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    // Fill these values with your own Supabase project credentials!
+
+    const SUPABASE_URL = 'https://kdbrlesgpbhzlqqftaqb.supabase.co';
+    const SUPABASE_KEY = 'your supabase key';
+
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function fetchRows() {
+      document.getElementById('error').textContent = '';
+      const { data, error } = await supabase.from('homeloan-rate').select('*').order('id');
+      if (error) document.getElementById('error').textContent = error.message;
+      const tbody = document.querySelector('#table tbody');
+      tbody.innerHTML = '';
+      if (data) data.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${row.id}</td>
+          <td>${row.created_at}</td>
+          <td><input type="number" class="form-control" step="0.01" value="${row.rate}" onchange="updateField(${row.id}, 'rate', this.value)" /></td>
+          <td><input type="text" class="form-control" value="${row.rateType}" onchange="updateField(${row.id}, 'rateType', this.value)" /></td>
+          <td>
+            <button class="btn btn-danger btn-sm" onclick="deleteRow(${row.id})">Delete</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.fetchRows = fetchRows;
+
+    async function createRow() {
+      document.getElementById('error').textContent = '';
+      const rate = parseFloat(document.getElementById('rate').value);
+      const rateType = document.getElementById('rateType').value.trim();
+      if (isNaN(rate) || !rateType) {
+        document.getElementById('error').textContent = 'Please enter both rate and rateType';
+        return;
+      }
+      const { error } = await supabase.from('homeloan-rate').insert([{ rate, rateType }]);
+      if (error) document.getElementById('error').textContent = error.message;
+      await fetchRows();
+    }
+    window.createRow = createRow;
+
+    window.updateField = async function(id, column, value) {
+      document.getElementById('error').textContent = '';
+      if (column === 'rate') value = parseFloat(value);
+      const { error } = await supabase.from('homeloan-rate').update({ [column]: value }).eq('id', id);
+      if (error) document.getElementById('error').textContent = error.message;
+      await fetchRows();
+    }
+
+    window.deleteRow = async function(id) {
+      document.getElementById('error').textContent = '';
+      const { error } = await supabase.from('homeloan-rate').delete().eq('id', id);
+      if (error) document.getElementById('error').textContent = error.message;
+      await fetchRows();
+    }
+
+    // Initial table load
+    fetchRows();
+  </script>
+</body>
+</html>

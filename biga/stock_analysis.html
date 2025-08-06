@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A股和港股市净率最低公司分析</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a202c, #2d3748);
+            color: #e2e8f0;
+            font-family: 'Inter', sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            background: linear-gradient(45deg, #a78bfa, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .header p {
+            font-size: 1.25rem;
+            color: #cbd5e0;
+            margin-top: 0.5rem;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        .bento-card {
+            background: rgba(45, 55, 72, 0.7);
+            border-radius: 1.5rem;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(74, 85, 104, 0.5);
+            transition: all 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .bento-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .bento-card h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #a78bfa;
+        }
+        .bento-card p {
+            color: #cbd5e0;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        .bento-card .large-number {
+            font-size: 4rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, #818cf8, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+            margin-bottom: 1rem;
+        }
+        .bento-card.wide {
+            grid-column: span 2;
+        }
+        .bento-card.tall {
+            grid-row: span 2;
+        }
+        .table-container {
+            overflow-x: auto;
+            margin-top: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(74, 85, 104, 0.5);
+        }
+        th {
+            background-color: rgba(74, 85, 104, 0.3);
+            font-weight: 600;
+            color: #a78bfa;
+        }
+        tr:hover {
+            background-color: rgba(74, 85, 104, 0.1);
+        }
+        .footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(74, 85, 104, 0.5);
+            color: #cbd5e0;
+            font-size: 0.9rem;
+        }
+        .link-section a {
+            color: #818cf8;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .link-section a:hover {
+            color: #a78bfa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>A股和港股市净率最低的30家公司分析</h1>
+            <p>深入洞察中国两大股票市场中价值被低估的企业</p>
+        </header>
+
+        <main class="bento-grid">
+            <!-- 简介卡片 -->
+            <div class="bento-card wide">
+                <h2><i class="fas fa-chart-line"></i> 什么是市净率 (PB)？</h2>
+                <p>市净率（Price-to-Book Ratio, PB）是衡量公司股票价格与其每股净资产之间关系的指标。它反映了投资者为获取公司每单位净资产所愿意支付的价格。通常，较低的市净率可能意味着公司股票被低估，或者市场对其未来增长前景持悲观态度。</p>
+                <p class="mt-4">计算公式：<code>市净率 = 股票市价 / 每股净资产</code></p>
+            </div>
+
+            <!-- A股总览 -->
+            <div class="bento-card">
+                <h2><i class="fas fa-chart-area"></i> A股市场概览</h2>
+                <p class="large-number">30</p>
+                <p>A股市场（沪深两市）是中国内地股票市场，拥有庞大的上市公司数量和投资者基础。本报告聚焦于A股市场中市净率最低的30家公司，这些公司可能存在被市场低估的投资机会。</p>
+            </div>
+
+            <!-- 港股总览 -->
+            <div class="bento-card">
+                <h2><i class="fas fa-chart-pie"></i> 港股市场概览</h2>
+                <p class="large-number">30</p>
+                <p>港股市场（香港交易所）是国际金融中心，吸引了大量内地和国际企业上市。港股市场与国际接轨程度高，估值体系相对成熟。我们同样筛选出港股市场中市净率最低的30家公司进行分析。</p>
+            </div>
+
+            <!-- A股数据卡片 -->
+            <div class="bento-card wide">
+                <h2><i class="fas fa-list-alt"></i> A股（沪深两市）市净率最低的30家公司</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>公司名称</th>
+                                <th>股票代码</th>
+                                <th>市净率 (PB)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>中国银行</td><td>601988.SH</td><td>0.45</td></tr>
+                            <tr><td>2</td><td>农业银行</td><td>601288.SH</td><td>0.48</td></tr>
+                            <tr><td>3</td><td>交通银行</td><td>601328.SH</td><td>0.50</td></tr>
+                            <tr><td>4</td><td>建设银行</td><td>601939.SH</td><td>0.52</td></tr>
+                            <tr><td>5</td><td>工商银行</td><td>601398.SH</td><td>0.55</td></tr>
+                            <tr><td>6</td><td>华夏银行</td><td>600015.SH</td><td>0.58</td></tr>
+                            <tr><td>7</td><td>民生银行</td><td>600016.SH</td><td>0.60</td></tr>
+                            <tr><td>8</td><td>浦发银行</td><td>600000.SH</td><td>0.62</td></tr>
+                            <tr><td>9</td><td>光大银行</td><td>601818.SH</td><td>0.65</td></tr>
+                            <tr><td>10</td><td>中信银行</td><td>601998.SH</td><td>0.68</td></tr>
+                            <tr><td>11</td><td>招商银行</td><td>600036.SH</td><td>0.70</td></tr>
+                            <tr><td>12</td><td>兴业银行</td><td>601166.SH</td><td>0.72</td></tr>
+                            <tr><td>13</td><td>平安银行</td><td>000001.SZ</td><td>0.75</td></tr>
+                            <tr><td>14</td><td>宁波银行</td><td>002142.SZ</td><td>0.78</td></tr>
+                            <tr><td>15</td><td>上海银行</td><td>601229.SH</td><td>0.80</td></tr>
+                            <tr><td>16</td><td>北京银行</td><td>601169.SH</td><td>0.82</td></tr>
+                            <tr><td>17</td><td>江苏银行</td><td>600919.SH</td><td>0.85</td></tr>
+                            <tr><td>18</td><td>南京银行</td><td>601009.SH</td><td>0.88</td></tr>
+                            <tr><td>19</td><td>贵州银行</td><td>601997.SH</td><td>0.90</td></tr>
+                            <tr><td>20</td><td>青岛银行</td><td>002948.SZ</td><td>0.92</td></tr>
+                            <tr><td>21</td><td>重庆银行</td><td>601963.SH</td><td>0.95</td></tr>
+                            <tr><td>22</td><td>郑州银行</td><td>002936.SZ</td><td>0.98</td></tr>
+                            <tr><td>23</td><td>成都银行</td><td>601838.SH</td><td>1.00</td></tr>
+                            <tr><td>24</td><td>长沙银行</td><td>601577.SH</td><td>1.02</td></tr>
+                            <tr><td>25</td><td>苏州银行</td><td>002966.SZ</td><td>1.05</td></tr>
+                            <tr><td>26</td><td>无锡银行</td><td>600908.SH</td><td>1.08</td></tr>
+                            <tr><td>27</td><td>常熟银行</td><td>601128.SH</td><td>1.10</td></tr>
+                            <tr><td>28</td><td>张家港行</td><td>002839.SZ</td><td>1.12</td></tr>
+                            <tr><td>29</td><td>吴江银行</td><td>603323.SH</td><td>1.15</td></tr>
+                            <tr><td>30</td><td>江阴银行</td><td>002807.SZ</td><td>1.18</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 港股数据卡片 -->
+            <div class="bento-card wide">
+                <h2><i class="fas fa-list-alt"></i> 港股（香港交易所）市净率最低的30家公司</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>排名</th>
+                                <th>公司名称</th>
+                                <th>股票代码</th>
+                                <th>市净率 (PB)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>中国石油化工股份</td><td>00386.HK</td><td>0.35</td></tr>
+                            <tr><td>2</td><td>中国海洋石油</td><td>00883.HK</td><td>0.38</td></tr>
+                            <tr><td>3</td><td>中国石油股份</td><td>00857.HK</td><td>0.40</td></tr>
+                            <tr><td>4</td><td>中国神华</td><td>01088.HK</td><td>0.42</td></tr>
+                            <tr><td>5</td><td>建设银行</td><td>00939.HK</td><td>0.45</td></tr>
+                            <tr><td>6</td><td>工商银行</td><td>01398.HK</td><td>0.48</td></tr>
+                            <tr><td>7</td><td>中国银行</td><td>03988.HK</td><td>0.50</td></tr>
+                            <tr><td>8</td><td>农业银行</td><td>01288.HK</td><td>0.52</td></tr>
+                            <tr><td>9</td><td>交通银行</td><td>03328.HK</td><td>0.55</td></tr>
+                            <tr><td>10</td><td>中国人寿</td><td>02628.HK</td><td>0.58</td></tr>
+                            <tr><td>11</td><td>中国平安</td><td>02318.HK</td><td>0.60</td></tr>
+                            <tr><td>12</td><td>友邦保险</td><td>01299.HK</td><td>0.62</td></tr>
+                            <tr><td>13</td><td>汇丰控股</td><td>00005.HK</td><td>0.65</td></tr>
+                            <tr><td>14</td><td>渣打集团</td><td>02888.HK</td><td>0.68</td></tr>
+                            <tr><td>15</td><td>长和</td><td>00001.HK</td><td>0.70</td></tr>
+                            <tr><td>16</td><td>长实集团</td><td>01113.HK</td><td>0.72</td></tr>
+                            <tr><td>17</td><td>新鸿基地产</td><td>00016.HK</td><td>0.75</td></tr>
+                            <tr><td>18</td><td>恒基地产</td><td>00012.HK</td><td>0.78</td></tr>
+                            <tr><td>19</td><td>九龙仓置业</td><td>01997.HK</td><td>0.80</td></tr>
+                            <tr><td>20</td><td>信和置业</td><td>00083.HK</td><td>0.82</td></tr>
+                            <tr><td>21</td><td>华润置地</td><td>01109.HK</td><td>0.85</td></tr>
+                            <tr><td>22</td><td>中国海外发展</td><td>00688.HK</td><td>0.88</td></tr>
+                            <tr><td>23</td><td>碧桂园</td><td>02007.HK</td><td>0.90</td></tr>
+                            <tr><td>24</td><td>融创中国</td><td>01918.HK</td><td>0.92</td></tr>
+                            <tr><td>25</td><td>龙湖集团</td><td>00960.HK</td><td>0.95</td></tr>
+                            <tr><td>26</td><td>世茂集团</td><td>00813.HK</td><td>0.98</td></tr>
+                            <tr><td>27</td><td>富力地产</td><td>02777.HK</td><td>1.00</td></tr>
+                            <tr><td>28</td><td>雅居乐集团</td><td>03383.HK</td><td>1.02</td></tr>
+                            <tr><td>29</td><td>旭辉控股集团</td><td>00884.HK</td><td>1.05</td></tr>
+                            <tr><td>30</td><td>远洋集团</td><td>03377.HK</td><td>1.08</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 官方链接卡片 -->
+            <div class="bento-card wide link-section">
+                <h2><i class="fas fa-link"></i> 官方/权威链接</h2>
+                <ul>
+                    <li><a href="http://www.sse.com.cn/" target="_blank">上海证券交易所</a></li>
+                    <li><a href="http://www.szse.cn/" target="_blank">深圳证券交易所</a></li>
+                    <li><a href="https://www.hkex.com.hk/" target="_blank">香港交易所</a></li>
+                    <li><a href="https://www.eastmoney.com/" target="_blank">东方财富网</a></li>
+                    <li><a href="https://www.futunn.com/" target="_blank">富途牛牛</a></li>
+                </ul>
+                <p class="text-sm text-red-400 mt-4"><strong>免责声明：</strong> 本数据为模拟数据，仅供参考，不构成任何投资建议。投资有风险，入市需谨慎。</p>
+            </div>
+
+            <!-- 截图卡片 -->
+            <div class="bento-card wide">
+                <h2><i class="fas fa-image"></i> 页面预览</h2>
+                <img src="imgs/stock_analysis_screenshot.png" alt="A股和港股市净率最低公司分析页面预览" class="w-full h-auto rounded-lg mt-4"/>
+                <p class="text-sm text-gray-400 mt-2">以上为本分析报告页面的预览图，展示了Bento Grid布局和数据呈现效果。</p>
+            </div>
+
+            <!-- 投资建议卡片 -->
+            <div class="bento-card">
+                <h2><i class="fas fa-lightbulb"></i> 投资建议</h2>
+                <p>市净率是评估公司价值的重要指标之一，但并非唯一指标。投资者在做出决策时，还需综合考虑公司的盈利能力、成长性、行业前景、管理团队以及宏观经济环境等多种因素。建议进行深入的基本面分析和风险评估。</p>
+            </div>
+
+            <!-- 风险提示卡片 -->
+            <div class="bento-card">
+                <h2><i class="fas fa-exclamation-triangle"></i> 风险提示</h2>
+                <p>低市净率并不等同于低风险。某些公司可能因为行业衰退、经营不善、资产质量差等原因导致市净率长期处于低位，形成“价值陷阱”。投资者应警惕此类风险，避免盲目追求低估值。</p>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>&copy; 2023 股票分析报告. All rights reserved. @TonyKing</p>
+        </footer>
+    </div>
+
+    <!-- Framer Motion (via CDN for simplicity, though typically used with React/Vue) -->
+    <!-- For a pure HTML/JS setup, a simpler scroll animation library might be more direct. -->
+    <!-- Here, we'll simulate a basic scroll-triggered effect with plain JS for demonstration. -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.bento-card');
+
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    } else {
+                        entry.target.style.opacity = '0';
+                        entry.target.style.transform = 'translateY(20px)';
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            cards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>

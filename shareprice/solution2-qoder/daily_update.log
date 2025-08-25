@@ -1,0 +1,13 @@
+2025-08-25 12:45:28,752 - INFO - Starting automated daily update process...
+2025-08-25 12:45:28,785 - INFO - Loaded 1 new records from new_daily_data_example.csv
+2025-08-25 12:45:28,785 - INFO - Processing 1 new records
+2025-08-25 12:45:28,787 - INFO - New data: 2025-8-23 - Close: 4,385.20
+2025-08-25 12:45:28,829 - INFO - Updated historical data with 1 new records
+2025-08-25 12:45:29,658 - INFO - New predictions saved to predict.csv
+2025-08-25 12:45:29,660 - INFO - Prediction: 2025-08-24 - Close: 4324.65
+2025-08-25 12:45:29,661 - INFO - Prediction: 2025-08-25 - Close: 4319.79
+2025-08-25 12:45:29,661 - INFO - Prediction: 2025-08-26 - Close: 4321.59
+2025-08-25 12:45:29,661 - INFO - Prediction: 2025-08-27 - Close: 4321.87
+2025-08-25 12:45:29,661 - INFO - Prediction: 2025-08-28 - Close: 4321.87
+2025-08-25 12:45:29,661 - INFO - Daily update completed successfully!
+2025-08-25 12:45:29,663 - INFO - Daily update process completed successfully!

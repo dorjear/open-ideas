@@ -1,5 +1,6 @@
 package com.demo.customer;
 
+import com.demo.testsupport.TestResultLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -13,119 +14,95 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static com.demo.testsupport.TestHttpLogging.controllerCall;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({TestResultLogger.class, MockitoExtension.class})
 class CustomerControllerTest {
 
     @Mock
-    private CustomerRepository repository;
+    private CustomerService service;
 
     @InjectMocks
     private CustomerController controller;
 
     @Test
-    void getAllReturnsCustomersFromRepository() {
-        List<Customer> customers = List.of(
-                new Customer("Ada", "Lovelace", "ada@example.com"),
-                new Customer("Grace", "Hopper", "grace@example.com")
-        );
-        when(repository.findAll()).thenReturn(customers);
-
-        List<Customer> result = controller.getAll();
-
-        assertSame(customers, result);
-        verify(repository).findAll();
+    void getAllReturnsCustomersFromService() {
+        List<Customer> customers = List.of(new Customer("Ada", "Lovelace", "ada@example.com"));
+        when(service.getAll()).thenReturn(customers);
+        assertSame(customers, controllerCall("GET", "/api/customers", null, () -> controller.getAll()));
+        verify(service).getAll();
     }
 
     @Test
     void getByIdReturnsCustomerWhenFound() {
         Customer customer = new Customer("Ada", "Lovelace", "ada@example.com");
-        when(repository.findById(7L)).thenReturn(Optional.of(customer));
-
-        var response = controller.getById(7L);
-
+        when(service.getById(7L)).thenReturn(Optional.of(customer));
+        var response = controllerCall("GET", "/api/customers/7", null, () -> controller.getById(7L));
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertSame(customer, response.getBody());
     }
 
     @Test
     void getByIdReturnsNotFoundWhenMissing() {
-        when(repository.findById(7L)).thenReturn(Optional.empty());
-
-        var response = controller.getById(7L);
-
+        when(service.getById(7L)).thenReturn(Optional.empty());
+        var response = controllerCall("GET", "/api/customers/7", null, () -> controller.getById(7L));
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
-    void createSavesCustomerAndReturnsCreatedResponse() {
-        Customer customer = new Customer("Ada", "Lovelace", "ada@example.com");
+    void createDelegatesToServiceAndReturnsLocation() {
+        CustomerRequest request = new CustomerRequest("Ada", "Lovelace", "ada@example.com");
         Customer saved = new Customer("Ada", "Lovelace", "ada@example.com");
         saved.setId(9L);
-        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/api/customers");
-        request.setServerName("localhost");
-        request.setServerPort(8080);
-        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
-        when(repository.save(customer)).thenReturn(saved);
-
+        saved.setAge(42);
+        when(service.create(request)).thenReturn(saved);
+        MockHttpServletRequest servletRequest = new MockHttpServletRequest("POST", "/api/customers");
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(servletRequest));
         try {
-            var response = controller.create(customer);
-
+            var response = controllerCall("POST", "/api/customers", request, () -> controller.create(request));
             assertEquals(HttpStatus.CREATED, response.getStatusCode());
             assertSame(saved, response.getBody());
-            assertTrue(response.getHeaders().getLocation().toString().endsWith("/api/customers/9"));
+            assertEquals("http://localhost/api/customers/9", response.getHeaders().getLocation().toString());
+            verify(service).create(request);
         } finally {
             RequestContextHolder.resetRequestAttributes();
         }
     }
 
     @Test
-    void updateChangesAndSavesCustomerWhenFound() {
-        Customer existing = new Customer("Old", "Name", "old@example.com");
-        Customer updates = new Customer("Ada", "Lovelace", "ada@example.com");
-        when(repository.findById(7L)).thenReturn(Optional.of(existing));
-        when(repository.save(existing)).thenReturn(existing);
-
-        var response = controller.update(7L, updates);
-
+    void updateDelegatesToServiceWhenFound() {
+        CustomerRequest request = new CustomerRequest("Ada", "Lovelace", "ada@example.com");
+        Customer saved = new Customer("Ada", "Lovelace", "ada@example.com");
+        saved.setAge(42);
+        when(service.update(7L, request)).thenReturn(Optional.of(saved));
+        var response = controllerCall("PUT", "/api/customers/7", request, () -> controller.update(7L, request));
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertSame(existing, response.getBody());
-        assertEquals("Ada", existing.getFirstName());
-        assertEquals("Lovelace", existing.getLastName());
-        assertEquals("ada@example.com", existing.getEmail());
-        verify(repository).save(existing);
+        assertSame(saved, response.getBody());
+        verify(service).update(7L, request);
     }
 
     @Test
-    void updateReturnsNotFoundWhenCustomerIsMissing() {
-        when(repository.findById(7L)).thenReturn(Optional.empty());
-
-        var response = controller.update(7L, new Customer("Ada", "Lovelace", "ada@example.com"));
-
+    void updateReturnsNotFoundWhenMissing() {
+        CustomerRequest request = new CustomerRequest("Ada", "Lovelace", "ada@example.com");
+        when(service.update(7L, request)).thenReturn(Optional.empty());
+        var response = controllerCall("PUT", "/api/customers/7", request, () -> controller.update(7L, request));
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test
-    void deleteRemovesCustomerAndReturnsNoContentWhenFound() {
-        when(repository.existsById(7L)).thenReturn(true);
-
-        var response = controller.delete(7L);
-
+    void deleteReturnsNoContentWhenFound() {
+        when(service.delete(7L)).thenReturn(true);
+        var response = controllerCall("DELETE", "/api/customers/7", null, () -> controller.delete(7L));
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
-        verify(repository).deleteById(7L);
+        verify(service).delete(7L);
     }
 
     @Test
-    void deleteReturnsNotFoundWhenCustomerIsMissing() {
-        when(repository.existsById(7L)).thenReturn(false);
-
-        var response = controller.delete(7L);
-
+    void deleteReturnsNotFoundWhenMissing() {
+        when(service.delete(7L)).thenReturn(false);
+        var response = controllerCall("DELETE", "/api/customers/7", null, () -> controller.delete(7L));
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 }

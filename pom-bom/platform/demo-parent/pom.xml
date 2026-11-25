@@ -19,6 +19,12 @@
         <maven.compiler.parameters>true</maven.compiler.parameters>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>3.5.16</spring-boot.version>
+        <jacoco.version>0.8.16</jacoco.version>
+        <jacoco.agent.argLine></jacoco.agent.argLine>
+        <argLine></argLine>
+        <skipTests>false</skipTests>
+        <coverage.publish.skip>${skipTests}</coverage.publish.skip>
+        <test.reports.directory>${project.build.directory}/test-reports</test.reports.directory>
     </properties>
 
     <dependencyManagement>
@@ -86,9 +92,72 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.5.2</version>
+                    <configuration>
+                        <argLine>@{jacoco.agent.argLine} ${argLine}</argLine>
+                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <systemPropertyVariables>
+                            <test.reports.directory>${test.reports.directory}</test.reports.directory>
+                        </systemPropertyVariables>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.version}</version>
+                    <executions>
+                        <execution>
+                            <id>coverage-agent</id>
+                            <goals><goal>prepare-agent</goal></goals>
+                            <configuration>
+                                <propertyName>jacoco.agent.argLine</propertyName>
+                                <append>false</append>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>coverage-report</id>
+                            <phase>test</phase>
+                            <goals><goal>report</goal></goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.6.4</version>
+                    <executions>
+                        <execution>
+                            <id>publish-test-coverage</id>
+                            <phase>test</phase>
+                            <goals><goal>java</goal></goals>
+                            <configuration>
+                                <mainClass>com.demo.testsupport.TestCoverageReport</mainClass>
+                                <classpathScope>test</classpathScope>
+                                <skip>${coverage.publish.skip}</skip>
+                                <arguments>
+                                    <argument>${test.reports.directory}</argument>
+                                    <argument>${project.build.directory}/site/jacoco</argument>
+                                </arguments>
+                            </configuration>
+                        </execution>
+                    </executions>
                 </plugin>
             </plugins>
         </pluginManagement>
     </build>
+
+    <profiles>
+        <profile>
+            <id>skip-coverage-publisher-with-test-compilation</id>
+            <activation>
+                <property>
+                    <name>maven.test.skip</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <coverage.publish.skip>true</coverage.publish.skip>
+            </properties>
+        </profile>
+    </profiles>
 
 </project>

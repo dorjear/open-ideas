@@ -1,5 +1,6 @@
 package com.demo.customer;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,6 +24,9 @@ public class Customer {
     @Email
     @NotBlank
     private String email;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Integer age;
 
     public Customer() {
     }
@@ -63,6 +67,14 @@ public class Customer {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Integer getAge() {
+        return age;
+    }
+
+    public void setAge(Integer age) {
+        this.age = age;
     }
 
 }

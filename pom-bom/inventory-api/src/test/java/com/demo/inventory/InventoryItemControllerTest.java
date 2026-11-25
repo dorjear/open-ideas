@@ -1,5 +1,6 @@
 package com.demo.inventory;
 
+import com.demo.testsupport.TestResultLogger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -14,13 +15,14 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import static com.demo.testsupport.TestHttpLogging.controllerCall;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({TestResultLogger.class, MockitoExtension.class})
 class InventoryItemControllerTest {
 
     @Mock
@@ -34,7 +36,7 @@ class InventoryItemControllerTest {
         List<InventoryItem> items = List.of(item("SKU-001"), item("SKU-002"));
         when(repository.findAll()).thenReturn(items);
 
-        List<InventoryItem> result = controller.getAll();
+        List<InventoryItem> result = controllerCall("GET", "/api/items", null, () -> controller.getAll());
 
         assertSame(items, result);
         verify(repository).findAll();
@@ -45,7 +47,7 @@ class InventoryItemControllerTest {
         InventoryItem item = item("SKU-001");
         when(repository.findById(7L)).thenReturn(Optional.of(item));
 
-        var response = controller.getById(7L);
+        var response = controllerCall("GET", "/api/items/7", null, () -> controller.getById(7L));
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertSame(item, response.getBody());
@@ -55,7 +57,7 @@ class InventoryItemControllerTest {
     void getByIdReturnsNotFoundWhenMissing() {
         when(repository.findById(7L)).thenReturn(Optional.empty());
 
-        var response = controller.getById(7L);
+        var response = controllerCall("GET", "/api/items/7", null, () -> controller.getById(7L));
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
@@ -72,7 +74,7 @@ class InventoryItemControllerTest {
         when(repository.save(item)).thenReturn(saved);
 
         try {
-            var response = controller.create(item);
+            var response = controllerCall("POST", "/api/items", item, () -> controller.create(item));
 
             assertEquals(HttpStatus.CREATED, response.getStatusCode());
             assertSame(saved, response.getBody());
@@ -89,7 +91,7 @@ class InventoryItemControllerTest {
         when(repository.findById(7L)).thenReturn(Optional.of(existing));
         when(repository.save(existing)).thenReturn(existing);
 
-        var response = controller.update(7L, updates);
+        var response = controllerCall("PUT", "/api/items/7", updates, () -> controller.update(7L, updates));
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertSame(existing, response.getBody());
@@ -104,7 +106,8 @@ class InventoryItemControllerTest {
     void updateReturnsNotFoundWhenItemIsMissing() {
         when(repository.findById(7L)).thenReturn(Optional.empty());
 
-        var response = controller.update(7L, item("SKU-NEW"));
+        InventoryItem updates = item("SKU-NEW");
+        var response = controllerCall("PUT", "/api/items/7", updates, () -> controller.update(7L, updates));
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
@@ -113,7 +116,7 @@ class InventoryItemControllerTest {
     void deleteRemovesItemAndReturnsNoContentWhenFound() {
         when(repository.existsById(7L)).thenReturn(true);
 
-        var response = controller.delete(7L);
+        var response = controllerCall("DELETE", "/api/items/7", null, () -> controller.delete(7L));
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(repository).deleteById(7L);
@@ -123,7 +126,7 @@ class InventoryItemControllerTest {
     void deleteReturnsNotFoundWhenItemIsMissing() {
         when(repository.existsById(7L)).thenReturn(false);
 
-        var response = controller.delete(7L);
+        var response = controllerCall("DELETE", "/api/items/7", null, () -> controller.delete(7L));
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
